@@ -6,7 +6,7 @@ const lastName = faker.name.lastName()
 // Example import
 // import * as Texts from 'constants/objectTexts'
 
-describe('Group of test', function () {
+describe('Goup of tsdfsdfdsest', function () {
   before(function () {
     cy.log('run me on 1 time at all test start')
   })
