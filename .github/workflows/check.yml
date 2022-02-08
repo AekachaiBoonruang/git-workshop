@@ -9,7 +9,7 @@ on:
 
 jobs:
   check:
-    runs-on: [self-hosted, macOS]
+    runs-on: ubuntu-latest
     if: github.event_name == 'push'
     steps:
       - name: Checkout code
