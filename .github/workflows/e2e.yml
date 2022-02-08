@@ -46,27 +46,3 @@ jobs:
       - name: Move all report to today date
         if: success() || failure()
         run: mv cypress/results ${{steps.setup.outputs.DATE}}
-      - name: Deploy report to S3
-        if: success() || failure()
-        uses: reggionick/s3-deploy@v3
-        with:
-          folder: './${{steps.setup.outputs.DATE}}'
-          bucket: 'automated-tester/${{steps.setup.outputs.PROJECT}}'
-          bucket-region: 'ap-southeast-1'
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      - name: Send notification to slack
-        uses: 8398a7/action-slack@v2
-        if: success() || failure()
-        with:
-          status: ${{ job.status }}
-          author_name:
-            Tester report
-            ${{steps.setup.outputs.BRANCH_NAME}}-${{steps.setup.outputs.DATE}}
-          text:
-            'Can check report at:
-            {{Report AWS - URL}}/${{steps.setup.outputs.PROJECT}}/index.html'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
