@@ -1,0 +1,72 @@
+name: E2E Testing
+
+on:
+  push:
+    branches:
+      - master
+      - staging
+      - develop
+  repository_dispatch:
+    types: trigger_internal
+  schedule:
+    - cron: '0 0 * * *'
+
+env:
+  CYPRESS_CI: true
+  PROJECT_NAME: 'Test'
+
+jobs:
+  e2e:
+    name: E2E testing
+    runs-on: [self-hosted, macOS]
+    steps:
+      - name: Setup
+        if: success() || failure()
+        id: setup
+        run: |
+          TODAY_DATE=`date +"%d.%m.%y"`
+          echo "::set-output name=DATE::$TODAY_DATE"
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          echo "::set-output name=BRANCH_NAME::$BRANCH_NAME"
+          echo "::set-output name=PROJECT::$PROJECT_NAME/develop/$TODAY_DATE"
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Install
+        run: |
+          npm install
+      - name: E2E Testing Develop
+        run: npm run cypress:run
+      - name: Generate report
+        if: success() || failure()
+        run: |
+          npx mochawesome-merge ./cypress/results/report/*.json > ./cypress/results/mochawesome.json
+          npx marge ./cypress/results/mochawesome.json -o ./cypress/results && rm -rf cypress/results/report
+          mv cypress/results/mochawesome.html cypress/results/index.html
+      - name: Move all report to today date
+        if: success() || failure()
+        run: mv cypress/results ${{steps.setup.outputs.DATE}}
+      - name: Deploy report to S3
+        if: success() || failure()
+        uses: reggionick/s3-deploy@v3
+        with:
+          folder: './${{steps.setup.outputs.DATE}}'
+          bucket: 'automated-tester/${{steps.setup.outputs.PROJECT}}'
+          bucket-region: 'ap-southeast-1'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: Send notification to slack
+        uses: 8398a7/action-slack@v2
+        if: success() || failure()
+        with:
+          status: ${{ job.status }}
+          author_name:
+            Tester report
+            ${{steps.setup.outputs.BRANCH_NAME}}-${{steps.setup.outputs.DATE}}
+          text:
+            'Can check report at:
+            {{Report AWS - URL}}/${{steps.setup.outputs.PROJECT}}/index.html'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
