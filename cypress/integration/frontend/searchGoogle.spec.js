@@ -1,11 +1,10 @@
 /// <reference types="Cypress"/>
-describe('Google search.', function () {
+describe('Google', function () {
   beforeEach(function () {
-    cy.visit('https://www.google.com/')
+    cy.visit('http://google.co.th')
   })
-
-  it('Verify ddd google by name', function () {
-    cy.get('[name="q"]').type('เอกชัย บุญเรือง {ENTER}')
-    cy.contains('เอกชัย บุญเรือง | Facebook')
+  it('Verify search facebook', function () {
+    cy.get('[name="q"]').type('Poontarika {ENTER} ')
+    cy.contains('Poontarika')
   })
 })
