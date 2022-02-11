@@ -4,7 +4,7 @@ describe('Google search.', function () {
     cy.visit('https://www.google.com/')
   })
 
-  it('Verify search google by name', function () {
+  it('Verify ddd google by name', function () {
     cy.get('[name="q"]').type('เอกชัย บุญเรือง {ENTER}')
     cy.contains('เอกชัย บุญเรือง | Facebook')
   })
