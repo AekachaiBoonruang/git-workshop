@@ -5,7 +5,7 @@ describe('Google', function () {
   })
 
   it('Search google', function () {
-    cy.get('.gLFyf').type('20scoops CNX')
+    cy.get("input[name=q]").type('20scoops CNX')
     cy.get('.aajZCb > .lJ9FBc > center > .gNO89b').click()
   })
 })
